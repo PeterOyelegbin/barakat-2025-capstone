@@ -1,23 +1,22 @@
-region = "us-east-1"
+region       = "us-east-1"
 project_name = "project-bedrock"
 
 # VPC
-availability_zones = ["us-east-1a", "us-east-1b"]
-public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+availability_zones   = ["us-east-1a", "us-east-1b"]
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
 private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
 
 # EKS Node
 node_group_name = "bedrock-workers"
-instance_type = "t3.micro"
-desired_size = 2
-max_size = 4
-min_size = 2
+instance_type   = "t3.medium"
+desired_size    = 2
+max_size        = 3
+min_size        = 1
 
-# S3 Bucket
-iam_user = "bedrock-dev-view"
-bucket_name = "bedrock-assets-ALT/SOE/025/0384"
-lambda_function = "bedrock-asset-processor"
+# Others
+iam_user         = "bedrock-dev-view"
+bucket_name      = "bedrock-assets-ALT/SOE/025/0384"
+lambda_func_name = "bedrock-asset-processor"
 
-# # Others
 # app_namespace = "retail-app"
 # res_tag = Bedrock
