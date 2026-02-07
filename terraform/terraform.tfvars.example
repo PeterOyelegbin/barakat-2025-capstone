@@ -15,7 +15,7 @@ min_size        = 1
 
 # Others
 iam_user         = "bedrock-dev-view"
-bucket_name      = "bedrock-assets-ALT/SOE/025/0384"
+bucket_name      = "bedrock-assets-altsoe0250384"
 lambda_func_name = "bedrock-asset-processor"
 
 # app_namespace = "retail-app"

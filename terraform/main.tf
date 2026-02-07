@@ -7,7 +7,7 @@ terraform {
   }
 
   # backend "s3" {
-  #   bucket         = "starttech-154517339571-tfstate"
+  #   bucket         = "bedrock-154517339571-tfstate"
   #   key            = "prod/terraform.tfstate"
   #   region         = "us-east-1"
   #   encrypt        = true
@@ -34,9 +34,10 @@ module "vpc" {
 module "iam" {
   source = "./modules/compute/IAM"
 
-  project_name = var.project_name
-  iam_user     = var.iam_user
-  bucket_arn   = module.s3.bucket_arn
+  project_name   = var.project_name
+  iam_user       = var.iam_user
+  bucket_arn     = module.s3.bucket_arn
+  region         = var.region
 }
 
 module "eks" {
@@ -53,6 +54,7 @@ module "eks" {
   desired_size       = var.desired_size
   max_size           = var.max_size
   min_size           = var.min_size
+  dev_user_arn       = module.iam.iam_user_arn
 }
 
 module "s3" {

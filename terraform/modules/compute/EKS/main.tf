@@ -43,3 +43,29 @@ resource "aws_eks_node_group" "default" {
     Project = "Bedrock"
   }
 }
+
+# Add Dev IAM user to EKS cluster access
+resource "aws_eks_access_entry" "dev_user" {
+  cluster_name  = aws_eks_cluster.eks.name
+  principal_arn = var.dev_user_arn
+  type          = "STANDARD"
+
+  depends_on = [
+    var.dev_user_arn
+  ]
+}
+
+# Attach AmazonEKSViewPolicy to Dev IAM user for read-only access to EKS cluster
+resource "aws_eks_access_policy_association" "dev_user_view" {
+  cluster_name  = aws_eks_cluster.eks.name
+  principal_arn = var.dev_user_arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [
+    var.dev_user_arn
+  ]
+}

@@ -15,7 +15,7 @@ variable "cluster_role_arn" {
 
 variable "eks_cluster_policy" {
   description = "EKS cluster policy"
-  type        = string
+  type        = object({})
 }
 
 variable "node_role_arn" {
@@ -25,7 +25,7 @@ variable "node_role_arn" {
 
 variable "eks_node_policy" {
   description = "EKS node policy"
-  type        = string
+  type        = object({})
 }
 
 variable "node_group_name" {
@@ -51,4 +51,9 @@ variable "max_size" {
 variable "min_size" {
   description = "Minimum size for the EKS node group"
   type        = number
+}
+
+variable "dev_user_arn" {
+  description = "IAM user ARN for EKS access"
+  type        = string
 }

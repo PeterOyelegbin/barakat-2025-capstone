@@ -58,6 +58,12 @@ variable "iam_user" {
   type        = string
 }
 
+variable "pgp_public_key" {
+  description = "Base64-encoded PGP public key for encrypting IAM user password"
+  type        = string
+  sensitive   = true
+}
+
 # S3 Bucket variables defination
 variable "bucket_name" {
   description = "Bucket name"

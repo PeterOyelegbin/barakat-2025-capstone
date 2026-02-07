@@ -1,7 +1,7 @@
 # Create IAM role for EKS cluster
 resource "aws_iam_role" "eks_cluster" {
     name = "${var.project_name}-eks-cluster-role"
-    
+
     assume_role_policy = jsonencode({
         Version = "2012-10-17"
         Statement = [
@@ -67,7 +67,7 @@ resource "aws_iam_role_policy_attachment" "eks_node" {
 
 # IAM role for lambda
 resource "aws_iam_role" "lambda" {
-    name = "bedrock-asset-processor-role"
+    name = "${var.project_name}-lambda-role"
 
     assume_role_policy = jsonencode({
         Version = "2012-10-17"
@@ -81,12 +81,6 @@ resource "aws_iam_role" "lambda" {
             }
         ]
     })
-}
-
-# Allow logging to CloudWatch
-resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
-  role       = aws_iam_role.lambda.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 # Allow Lambda to read from S3
@@ -111,9 +105,15 @@ resource "aws_iam_role_policy_attachment" "attach_s3_policy" {
   policy_arn = aws_iam_policy.lambda_s3_read.arn
 }
 
+# Allow logging to CloudWatch
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
 
 # Create IAM User
-resource "aws_iam_user" "iam_user" {
+resource "aws_iam_user" "dev_user" {
     name = var.iam_user
 
     tags = {
@@ -121,21 +121,55 @@ resource "aws_iam_user" "iam_user" {
     }
 }
 
+# Create login profile for console access
+resource "aws_iam_user_login_profile" "console_access" {
+    user                    = aws_iam_user.dev_user.name
+    password_reset_required = false
+}
+
+# Create IAM policy for S3 PutObject and attach to user
+resource "aws_iam_policy" "s3_put_policy" {
+    name        = "${aws_iam_user.dev_user.name}-s3-putobject"
+    description = "Allow PutObject to specific bucket"
+
+    policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+        {
+            Effect = "Allow"
+            Action = [
+                "s3:PutObject"
+            ]
+            Resource = "${var.bucket_arn}/*"
+        }
+        ]
+    })
+}
+
+# Attach S3 PutObject policy to IAM user
+resource "aws_iam_user_policy_attachment" "s3_putobject" {
+  user       = aws_iam_user.dev_user.name
+  policy_arn = aws_iam_policy.s3_put_policy.arn
+}
+
 # Attach ReadOnlyAccess Policy
 resource "aws_iam_user_policy_attachment" "readonly" {
-    user       = aws_iam_user.iam_user.name
+    user       = aws_iam_user.dev_user.name
     policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
 
 # Create Access Key
 resource "aws_iam_access_key" "iam_key" {
-    user = aws_iam_user.iam_user.name
+    user = aws_iam_user.dev_user.name
 }
 
 # Save credentials to file
 resource "local_sensitive_file" "iam_credentials" {
-    filename = "${path.root}/bedrock-dev-view-credentials.txt"
+    filename = "${path.root}/bedrock-dev-credentials.txt"
     content  = <<EOT
+IAM_Console_URL: https://console.aws.amazon.com/iam/home?region=${var.region}#/users/${aws_iam_user.dev_user.name}
+IAM_User: ${aws_iam_user.dev_user.name}
+IAM_Password: ${aws_iam_user_login_profile.console_access.password}
 AWS_ACCESS_KEY_ID=${aws_iam_access_key.iam_key.id}
 AWS_SECRET_ACCESS_KEY=${aws_iam_access_key.iam_key.secret}
 EOT
