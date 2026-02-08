@@ -7,6 +7,14 @@ resource "aws_eks_cluster" "eks" {
     authentication_mode = "API"
   }
 
+  enabled_cluster_log_types = [
+    "api",
+    "audit",
+    "authenticator",
+    "controllerManager",
+    "scheduler",
+  ]
+
   vpc_config {
     subnet_ids = var.private_subnet_ids
   }
@@ -26,8 +34,7 @@ resource "aws_eks_node_group" "default" {
   node_group_name = var.node_group_name
   node_role_arn   = var.node_role_arn
   subnet_ids      = var.private_subnet_ids
-
-  instance_types = [var.instance_type]
+  instance_types  = [var.instance_type]
 
   scaling_config {
     desired_size = var.desired_size
@@ -44,15 +51,20 @@ resource "aws_eks_node_group" "default" {
   }
 }
 
+# Add CloudWatch Observability Add-on to EKS cluster
+resource "aws_eks_addon" "cw_observability" {
+  cluster_name                = aws_eks_cluster.eks.name
+  addon_name                  = "amazon-cloudwatch-observability"
+  service_account_role_arn    = var.cw_observability_arn
+  resolve_conflicts_on_create = "OVERWRITE"
+}
+
+
 # Add Dev IAM user to EKS cluster access
 resource "aws_eks_access_entry" "dev_user" {
   cluster_name  = aws_eks_cluster.eks.name
   principal_arn = var.dev_user_arn
   type          = "STANDARD"
-
-  depends_on = [
-    var.dev_user_arn
-  ]
 }
 
 # Attach AmazonEKSViewPolicy to Dev IAM user for read-only access to EKS cluster
@@ -64,8 +76,18 @@ resource "aws_eks_access_policy_association" "dev_user_view" {
   access_scope {
     type = "cluster"
   }
+}
 
-  depends_on = [
-    var.dev_user_arn
-  ]
+# Get the OIDC thumbprint for the EKS cluster to create an IAM OIDC provider for IRSA
+data "tls_certificate" "eks_oidc" {
+  # url = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
+  url = aws_eks_cluster.eks.identity[0].oidc[0].issuer
+}
+
+# Create an IAM OIDC provider for the EKS cluster to enable IRSA (IAM Roles for Service Accounts)
+resource "aws_iam_openid_connect_provider" "eks" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks_oidc.certificates[0].sha1_fingerprint]
+  # url             = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
+  url             = aws_eks_cluster.eks.identity[0].oidc[0].issuer
 }

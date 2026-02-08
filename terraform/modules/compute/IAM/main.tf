@@ -65,6 +65,37 @@ resource "aws_iam_role_policy_attachment" "eks_node" {
 }
 
 
+# Create IAM policy for EKS CloudWatch Observability Add-on
+data "aws_iam_policy_document" "cw_assume_role" {
+    statement {
+        actions = ["sts:AssumeRoleWithWebIdentity"]
+
+        principals {
+            type        = "Federated"
+            identifiers = [var.oidc_provider_arn]
+        }
+
+        condition {
+            test     = "StringEquals"
+            variable = "${replace(var.oidc_provider_url, "https://", "")}:sub"
+            values   = ["system:serviceaccount:amazon-cloudwatch:cloudwatch-agent"]
+        }
+    }
+}
+
+# Create IAM role for CloudWatch Observability Add-on
+resource "aws_iam_role" "cw_observability" {
+    name               = "${var.project_name}-cw-observability"
+    assume_role_policy = data.aws_iam_policy_document.cw_assume_role.json
+}
+
+# Attach CloudWatchAgentServerPolicy to CloudWatch IAM role
+resource "aws_iam_role_policy_attachment" "cw_policy_attach" {
+    role       = aws_iam_role.cw_observability.name
+    policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+
 # IAM role for lambda
 resource "aws_iam_role" "lambda" {
     name = "${var.project_name}-lambda-role"

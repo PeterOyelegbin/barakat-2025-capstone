@@ -17,3 +17,13 @@ variable "bucket_arn" {
   description = "S3 bucket ARN"
   type        = string
 }
+
+variable "oidc_provider_arn" {
+  description = "OpenID Connect provider ARN for EKS cluster"
+  type        = string
+}
+
+variable "oidc_provider_url" {
+  description = "OpenID Connect provider URL for EKS cluster"
+  type        = string
+}

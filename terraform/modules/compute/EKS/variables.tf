@@ -33,6 +33,11 @@ variable "node_group_name" {
   type        = string
 }
 
+variable "cw_observability_arn" {
+  description = "CloudWatch Observability IAM role ARN"
+  type        = string
+}
+
 variable "instance_type" {
   description = "EKS node instance type"
   type        = string
