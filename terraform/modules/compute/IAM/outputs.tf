@@ -8,6 +8,11 @@ output "node_role_arn" {
   value = aws_iam_role.eks_node.arn
 }
 
+output "eks_admin_arn" {
+  description = "EKS admin role ARN"
+  value = aws_iam_role.eks_admin.arn
+}
+
 output "cw_observability_arn" {
   description = "CloudWatch Observability IAM role ARN"
   value = aws_iam_role.cw_observability.arn

@@ -60,6 +60,25 @@ resource "aws_eks_addon" "cw_observability" {
 }
 
 
+# Grant EKS admin role full Kubernetes Admin in EKS
+resource "aws_eks_access_entry" "eks_admin" {
+  cluster_name  = aws_eks_cluster.eks.name
+  principal_arn = var.eks_admin_arn
+  type          = "STANDARD"
+}
+
+# Attach AmazonEKSClusterAdminPolicy to EKS admin role for full Kubernetes Admin access
+resource "aws_eks_access_policy_association" "eks_admin" {
+  cluster_name  = aws_eks_cluster.eks.name
+  principal_arn = var.eks_admin_arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+}
+
+
 # Add Dev IAM user to EKS cluster access
 resource "aws_eks_access_entry" "dev_user" {
   cluster_name  = aws_eks_cluster.eks.name

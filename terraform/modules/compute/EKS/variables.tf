@@ -62,3 +62,8 @@ variable "dev_user_arn" {
   description = "IAM user ARN for EKS access"
   type        = string
 }
+
+variable "eks_admin_arn" {
+  description = "IAM user ARN for EKS admin access"
+  type        = string
+}

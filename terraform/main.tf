@@ -34,10 +34,10 @@ module "vpc" {
 module "iam" {
   source = "./modules/compute/IAM"
 
-  project_name = var.project_name
-  iam_user     = var.iam_user
-  bucket_arn   = module.s3.bucket_arn
-  region       = var.region
+  project_name      = var.project_name
+  iam_user          = var.iam_user
+  bucket_arn        = module.s3.bucket_arn
+  region            = var.region
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
 }
@@ -52,6 +52,7 @@ module "eks" {
   node_group_name      = var.node_group_name
   node_role_arn        = module.iam.node_role_arn
   eks_node_policy      = module.iam.eks_node_policy
+  eks_admin_arn        = module.iam.eks_admin_arn
   cw_observability_arn = module.iam.cw_observability_arn
   instance_type        = var.instance_type
   desired_size         = var.desired_size
