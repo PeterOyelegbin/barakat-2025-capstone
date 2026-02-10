@@ -89,25 +89,25 @@ resource "aws_iam_role" "eks_admin" {
     }
 }
 
-# resource "aws_iam_policy" "allow_assume_eks_admin" {
-#   name = "AllowAssumeEKSAdminRole"
+resource "aws_iam_policy" "allow_assume_eks_admin" {
+    name = "AllowAssumeEKSAdminRole"
 
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect   = "Allow"
-#         Action   = "sts:AssumeRole"
-#         Resource = aws_iam_role.eks_admin.arn
-#       }
-#     ]
-#   })
-# }
+    policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+            {
+                Effect   = "Allow"
+                Action   = "sts:AssumeRole"
+                Resource = aws_iam_role.eks_admin.arn
+            }
+        ]
+    })
+}
 
-# resource "aws_iam_user_policy_attachment" "attach_assume_policy" {
-#   user       = aws_iam_user.dev_user.name
-#   policy_arn = aws_iam_policy.allow_assume_eks_admin.arn
-# }
+resource "aws_iam_user_policy_attachment" "attach_assume_policy" {
+    user       = "taiwo"
+    policy_arn = aws_iam_policy.allow_assume_eks_admin.arn
+}
 
 
 # Create IAM policy for EKS CloudWatch Observability Add-on

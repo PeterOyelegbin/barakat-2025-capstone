@@ -23,6 +23,7 @@ helm repo update
 
 echo "Deploying retail store sample application using Helm..."
 helm install retail-store retail-store/retail-store-sample-app --namespace $APP_NAMESPACE
+helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:0.8.5 --namespace retail-app
 
 echo "Waiting for application pods to be ready..."
 kubectl wait --namespace $APP_NAMESPACE --for=condition=ready pod -l app.kubernetes.io/name=retail-store --timeout=300s
