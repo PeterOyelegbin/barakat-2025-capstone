@@ -1,5 +1,6 @@
 region       = "us-east-1"
 project_name = "project-bedrock"
+resource_tag = "barakat-2025-capstone"
 
 # VPC
 availability_zones   = ["us-east-1a", "us-east-1b"]

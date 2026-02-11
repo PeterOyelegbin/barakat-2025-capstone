@@ -26,6 +26,7 @@ module "vpc" {
   source = "./modules/networking/vpc"
 
   project_name         = var.project_name
+  resource_tag         = var.resource_tag
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
   availability_zones   = var.availability_zones
@@ -35,6 +36,7 @@ module "iam" {
   source = "./modules/compute/IAM"
 
   project_name      = var.project_name
+  resource_tag      = var.resource_tag
   iam_user          = var.iam_user
   bucket_arn        = module.s3.bucket_arn
   region            = var.region
@@ -46,6 +48,7 @@ module "eks" {
   source = "./modules/compute/EKS"
 
   project_name         = var.project_name
+  resource_tag         = var.resource_tag
   cluster_role_arn     = module.iam.cluster_role_arn
   eks_cluster_policy   = module.iam.eks_cluster_policy
   private_subnet_ids   = module.vpc.private_subnet_ids
@@ -64,12 +67,14 @@ module "eks" {
 module "s3" {
   source = "./modules/storage/s3-bucket"
 
-  bucket_name = var.bucket_name
+  bucket_name  = var.bucket_name
+  resource_tag = var.resource_tag
 }
 
 module "lambda" {
   source = "./modules/compute/lambda"
 
+  resource_tag     = var.resource_tag
   lambda_func_name = var.lambda_func_name
   lambda_role_arn  = module.iam.lambda_role_arn
   bucket_arn       = module.s3.bucket_arn

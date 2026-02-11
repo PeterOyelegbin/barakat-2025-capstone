@@ -1,3 +1,8 @@
+variable "resource_tag" {
+  description = "Resouces tag name"
+  type        = string
+}
+
 variable "lambda_func_name" {
     description = "Lambda function name"
     type = string

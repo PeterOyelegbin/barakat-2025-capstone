@@ -3,6 +3,11 @@ variable "project_name" {
   type        = string
 }
 
+variable "resource_tag" {
+  description = "Resouces tag name"
+  type        = string
+}
+
 variable "private_subnet_ids" {
   description = "Private subnet IDs"
   type        = list(string)

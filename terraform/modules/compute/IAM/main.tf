@@ -19,7 +19,7 @@ resource "aws_iam_role" "eks_cluster" {
     })
 
     tags = {
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -48,7 +48,7 @@ resource "aws_iam_role" "eks_node" {
     })
 
     tags = {
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -68,6 +68,7 @@ resource "aws_iam_role_policy_attachment" "eks_node" {
 # Create IAM role for EKS admin access
 data "aws_caller_identity" "current" {}
 
+
 resource "aws_iam_role" "eks_admin" {
     name = "${var.project_name}-eks-admin-role"
 
@@ -85,7 +86,7 @@ resource "aws_iam_role" "eks_admin" {
     })
 
     tags = {
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -105,7 +106,7 @@ resource "aws_iam_policy" "allow_assume_eks_admin" {
 }
 
 resource "aws_iam_user_policy_attachment" "attach_assume_policy" {
-    user       = "taiwo"
+    user       = "automation"
     policy_arn = aws_iam_policy.allow_assume_eks_admin.arn
 }
 
@@ -193,7 +194,7 @@ resource "aws_iam_user" "dev_user" {
     name = var.iam_user
 
     tags = {
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 

@@ -24,7 +24,7 @@ resource "aws_eks_cluster" "eks" {
   ]
 
   tags = {
-    Project = "Bedrock"
+    Project = var.resource_tag
   }
 }
 
@@ -47,7 +47,7 @@ resource "aws_eks_node_group" "default" {
   ]
 
   tags = {
-    Project = "Bedrock"
+    Project = var.resource_tag
   }
 }
 
@@ -99,7 +99,6 @@ resource "aws_eks_access_policy_association" "dev_user_view" {
 
 # Get the OIDC thumbprint for the EKS cluster to create an IAM OIDC provider for IRSA
 data "tls_certificate" "eks_oidc" {
-  # url = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
   url = aws_eks_cluster.eks.identity[0].oidc[0].issuer
 }
 
@@ -107,6 +106,5 @@ data "tls_certificate" "eks_oidc" {
 resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.tls_certificate.eks_oidc.certificates[0].sha1_fingerprint]
-  # url             = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
   url             = aws_eks_cluster.eks.identity[0].oidc[0].issuer
 }
