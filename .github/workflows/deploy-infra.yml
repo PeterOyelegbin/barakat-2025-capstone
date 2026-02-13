@@ -3,12 +3,8 @@ name: Infrastructure Management
 on:
   push:
     branches: [main]
-    paths:
-      - 'terraform/**'
   pull_request:
     branches: [main, destroy-tf]
-    paths:
-      - "terraform/**"
   workflow_dispatch:
 
 jobs:
