@@ -9,6 +9,11 @@ variable "project_name" {
   type        = string
 }
 
+variable "resource_tag" {
+  description = "Resouces tag name"
+  type        = string
+}
+
 # VPC variables defination
 variable "public_subnet_cidrs" {
   description = "CIDR blocks for public subnets"
@@ -56,12 +61,6 @@ variable "min_size" {
 variable "iam_user" {
   description = "IAM user name"
   type        = string
-}
-
-variable "pgp_public_key" {
-  description = "Base64-encoded PGP public key for encrypting IAM user password"
-  type        = string
-  sensitive   = true
 }
 
 # S3 Bucket variables defination

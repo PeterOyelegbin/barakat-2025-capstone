@@ -13,6 +13,10 @@ resource "aws_lambda_function" "asset_processor" {
   runtime          = "python3.12"
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  tags = {
+    Project = var.resource_tag
+  }
 }
 
 # Allow S3 to invoke lambda

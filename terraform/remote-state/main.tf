@@ -17,7 +17,7 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket" "tf_state" {
-  bucket = "${var.project_name}-${data.aws_caller_identity.current.account_id}"
+  bucket = "${var.project_name}-${data.aws_caller_identity.current.account_id}-tfstate"
 
   lifecycle {
     prevent_destroy = false #set to false for testing purposes, change to true in production

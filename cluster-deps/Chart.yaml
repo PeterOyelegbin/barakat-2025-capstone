@@ -1,0 +1,23 @@
+apiVersion: v2
+name: cluster-deps
+description: Umbrella chart for Kubernetes in-cluster dependencies
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
+
+dependencies:
+  - name: mysql
+    version: 9.19.1
+    repository: https://charts.bitnami.com/bitnami
+
+  - name: postgresql
+    version: 15.5.21
+    repository: https://charts.bitnami.com/bitnami
+
+  - name: redis
+    version: 19.6.4
+    repository: https://charts.bitnami.com/bitnami
+
+  - name: rabbitmq
+    version: 14.4.3
+    repository: https://charts.bitnami.com/bitnami

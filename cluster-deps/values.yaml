@@ -1,0 +1,34 @@
+mysql:
+  auth:
+    rootPassword: RootPass123
+    database: myapp
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+
+postgresql:
+  auth:
+    username: appuser
+    password: AppPass123
+    database: myapp
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+
+redis:
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+
+rabbitmq:
+  auth:
+    username: admin
+    password: AdminPass123
+  persistence:
+    enabled: true
+    size: 8Gi

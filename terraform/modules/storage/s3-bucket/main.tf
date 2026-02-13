@@ -6,7 +6,7 @@ resource "aws_s3_bucket" "bucket" {
   }
 
   tags = {
-    Project = "Bedrock"
+    Project = var.resource_tag
   }
 }
 

@@ -1,5 +1,6 @@
 region       = "us-east-1"
 project_name = "project-bedrock"
+resource_tag = "barakat-2025-capstone"
 
 # VPC
 availability_zones   = ["us-east-1a", "us-east-1b"]
@@ -19,4 +20,3 @@ bucket_name      = "bedrock-assets-altsoe0250384"
 lambda_func_name = "bedrock-asset-processor"
 
 # app_namespace = "retail-app"
-# res_tag = Bedrock

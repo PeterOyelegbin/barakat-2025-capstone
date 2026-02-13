@@ -6,7 +6,7 @@ resource "aws_vpc" "vpc" {
 
     tags = {
         Name    = "${var.project_name}-vpc"
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -20,7 +20,7 @@ resource "aws_subnet" "public" {
 
     tags = {
         Name    = "${var.project_name}-public-subnet-${count.index + 1}"
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -33,7 +33,7 @@ resource "aws_subnet" "private" {
 
     tags = {
         Name    = "${var.project_name}-private-subnet-${count.index + 1}"
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -43,7 +43,7 @@ resource "aws_internet_gateway" "igw" {
 
     tags = {
         Name    = "${var.project_name}-igw"
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -52,7 +52,7 @@ resource "aws_eip" "nat" {
     domain = "vpc"
     tags = {
         Name    = "${var.project_name}-nat-eip"
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -63,7 +63,7 @@ resource "aws_nat_gateway" "nat" {
 
     tags = {
         Name    = "${var.project_name}-nat"
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 
     depends_on = [aws_internet_gateway.igw]
@@ -80,7 +80,7 @@ resource "aws_route_table" "public" {
 
     tags = {
         Name    = "${var.project_name}-public-rt"
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 
@@ -95,7 +95,7 @@ resource "aws_route_table" "private" {
 
     tags = {
         Name    = "${var.project_name}-private-rt"
-        Project = "Bedrock"
+        Project = var.resource_tag
     }
 }
 

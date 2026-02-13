@@ -1,10 +1,14 @@
 name: Infrastructure Management
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
   pull_request:
     branches: [main, destroy-tf]
-  merge_request:
-    branches: [main]
+    paths:
+      - "terraform/**"
   workflow_dispatch:
 
 jobs:
@@ -56,7 +60,7 @@ jobs:
 
   terraform-apply:
     needs: terraform-plan
-    if: github.ref == 'refs/heads/main' && github.event_name == 'merge_request'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -76,9 +80,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Terraform Init
-        run: terraform init
-
       - name: Download Plan
         uses: actions/download-artifact@v4
         with:
@@ -94,51 +95,28 @@ jobs:
 
           terraform apply -var-file=terraform.tfvars tfplan
 
-      # - name: Output Terraform Data
-      #   run: terraform output -json 2>/dev/null | grep -v "^::debug::" | head -n -0 > outputs.json
 
-      # - name: Verify Terraform Outputs
-      #   run: |
-      #     # Check if file starts with {
-      #     if [[ $(head -n 1 outputs.json) != "{" ]]; then
-      #       echo "File doesn't start with {, cleaning..."
-      #       # Remove first line
-      #       tail -n +2 outputs.json > outputs_clean.json
-      #       mv outputs_clean.json outputs.json
-      #     fi
+  deploy-application:
+    needs: terraform-apply
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      #     python3 -c "import json; json.load(open('outputs.json'))" && echo "✓ Valid JSON"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-      # - name: Read Terraform outputs
-      #   run: |
-      #     # Extract values from outputs.json
-      #     ASG_SERVER_IDS=$(jq -r '.asg_instance_ids.value | join(",")' outputs.json)
-      #     LOAD_BALANCER_DNS_NAME=$(jq -r '.load_balancer_dns_name.value' outputs.json)
-      #     REDIS_ENDPOINT=$(jq -r '.redis_primary_endpoint.value' outputs.json)
-      #     CLOUDFRONT_DISTRIBUTION_ID=$(jq -r '.distribution_id.value' outputs.json)
-      #     CLOUDFRONT_URL=$(jq -r '.cloudfront_url.value' outputs.json)
-      #     ECR_REPO_URL=$(jq -r '.ecr_repo_url.value' outputs.json)
-
-      #     echo "ASG_SERVER_IDS=$ASG_SERVER_IDS" >> $GITHUB_ENV
-      #     echo "LOAD_BALANCER_DNS_NAME=$LOAD_BALANCER_DNS_NAME" >> $GITHUB_ENV
-      #     echo "REDIS_ENDPOINT=$REDIS_ENDPOINT" >> $GITHUB_ENV
-      #     echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_DISTRIBUTION_ID" >> $GITHUB_ENV
-      #     echo "CLOUDFRONT_URL=$CLOUDFRONT_URL" >> $GITHUB_ENV
-      #     echo "ECR_REPO_URL=$ECR_REPO_URL" >> $GITHUB_ENV
-
-      # - name: Update GitHub Secrets in Another Repository
-      #   env:
-      #     GH_TOKEN: ${{ vars.CICD_PAT_TOKEN }}
-      #     TARGET_REPO: ${{ vars.TARGET_REPO }}
-      #   run: |
-      #     gh secret set ASG_SERVER_IDS --body "$ASG_SERVER_IDS" --repo "$TARGET_REPO"
-      #     gh secret set LOAD_BALANCER_DNS_NAME --body "$LOAD_BALANCER_DNS_NAME" --repo "$TARGET_REPO"
-      #     gh secret set REDIS_ENDPOINT --body "$REDIS_ENDPOINT" --repo "$TARGET_REPO"
-      #     gh secret set CLOUDFRONT_DISTRIBUTION_ID --body "$CLOUDFRONT_DISTRIBUTION_ID" --repo "$TARGET_REPO"
-      #     gh secret set CLOUDFRONT_URL --body "$CLOUDFRONT_URL" --repo "$TARGET_REPO"
-      #     gh secret set ECR_REPO_URL --body "$ECR_REPO_URL" --repo "$TARGET_REPO"
-
-      #     echo "Secrets updated successfully in $TARGET_REPO"
+      - name: Deploy Application
+        run: ./deploy-app.sh
 
 
   terraform-destroy:
@@ -161,9 +139,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Terraform Init
-        run: terraform init
 
       - name: Terraform Destroy
         run: |

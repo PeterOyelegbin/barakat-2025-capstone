@@ -3,6 +3,11 @@ variable "project_name" {
   type        = string
 }
 
+variable "resource_tag" {
+  description = "Resouces tag name"
+  type        = string
+}
+
 variable "private_subnet_ids" {
   description = "Private subnet IDs"
   type        = list(string)
@@ -33,6 +38,11 @@ variable "node_group_name" {
   type        = string
 }
 
+variable "cw_observability_arn" {
+  description = "CloudWatch Observability IAM role ARN"
+  type        = string
+}
+
 variable "instance_type" {
   description = "EKS node instance type"
   type        = string
@@ -55,5 +65,10 @@ variable "min_size" {
 
 variable "dev_user_arn" {
   description = "IAM user ARN for EKS access"
+  type        = string
+}
+
+variable "eks_admin_arn" {
+  description = "IAM user ARN for EKS admin access"
   type        = string
 }
