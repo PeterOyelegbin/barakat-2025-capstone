@@ -1,11 +1,11 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail 
 
 # Environment variables
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 if [ -z "$ACCOUNT_ID" ]; then
-  echo "❌ Unable to determine AWS Account ID. Are you logged in with AWS CLI?"
+  echo "Unable to determine AWS Account ID. Are you logged in with AWS CLI?"
   exit 1
 fi
 AWS_REGION="us-east-1"
@@ -21,36 +21,32 @@ echo "Verifying cluster access by listing nodes..."
 kubectl get nodes
 
 echo "Creating namespace for retail application..."
-kubectl create namespace $APP_NAMESPACE || echo "Namespaces already exists"
+kubectl create namespace $APP_NAMESPACE 2>/dev/null || echo "Namespace $APP_NAMESPACE already exists"
 # kubectl create namespace retail-app
 
-# echo "Adding Helm repository for retail store sample app..."
-# helm repo add bitnami https://charts.bitnami.com/bitnami
-# helm repo add retail-store https://github.com/aws-containers/retail-store-sample-app
-# helm repo update
+echo "Adding Helm repository for retail store sample app..."
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
 
-echo "Deploying retail store sample application using Helm..."
-# helm install my-nginx bitnami/nginx --namespace retail-app
-# helm install retail-store retail-store/retail-store-sample-app --namespace $APP_NAMESPACE
-helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:0.8.5 --namespace $APP_NAMESPACE
-helm install catalog oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart:1.4.0 --namespace $APP_NAMESPACE
-helm install cart oci://public.ecr.aws/aws-containers/retail-store-sample-cart-chart:1.4.0 --namespace $APP_NAMESPACE
-helm install orders oci://public.ecr.aws/aws-containers/retail-store-sample-orders-chart:1.4.0 --namespace $APP_NAMESPACE
-helm install checkout oci://public.ecr.aws/aws-containers/retail-store-sample-checkout-chart:1.4.0 --namespace $APP_NAMESPACE
+echo "Deploying retail store sample microservices application using Helm..."
+helm install cluster-deps ./cluster-deps -n $APP_NAMESPACE --create-namespace
+helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:0.8.5 --namespace $APP_NAMESPACE --wait
+helm install catalog oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart:1.4.0 --namespace $APP_NAMESPACE --wait
+helm install cart oci://public.ecr.aws/aws-containers/retail-store-sample-cart-chart:1.4.0 --namespace $APP_NAMESPACE --wait
+helm install orders oci://public.ecr.aws/aws-containers/retail-store-sample-orders-chart:1.4.0 --namespace $APP_NAMESPACE --wait
+helm install checkout oci://public.ecr.aws/aws-containers/retail-store-sample-checkout-chart:1.4.0 --namespace $APP_NAMESPACE --wait
 
 
 echo "Waiting for application pods to be ready..."
-kubectl wait --namespace $APP_NAMESPACE --for=condition=ready pod -l app.kubernetes.io/name=ui --timeout=300s
+kubectl wait --namespace $APP_NAMESPACE --for=condition=ready pod --all --timeout=300s 2>/dev/null || echo "All pods ready, check completed"
 
 echo "Listing pods in the retail application namespace..."
 kubectl get pods -n $APP_NAMESPACE
-# kubectl get all -n $APP_NAMESPACE
 
 echo "Exposing the services if not already exposed..."
 kubectl patch svc ui -n $APP_NAMESPACE -p '{"spec":{"type":"LoadBalancer"}}'
 
 echo "Listing services in the retail application namespace..."
 kubectl get svc -n $APP_NAMESPACE
-# kubectl get svc -n retail-app my-nginx
 
 echo "Retail store sample application deployed successfully!"

@@ -6,13 +6,13 @@ terraform {
     }
   }
 
-  # backend "s3" {
-  #   bucket         = "bedrock-154517339571-tfstate"
-  #   key            = "prod/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   encrypt        = true
-  #   use_lockfile   = true
-  # }
+  backend "s3" {
+    bucket       = "bedrock-154517339571-tfstate"
+    key          = "prod/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
+  }
 
   required_version = ">= 1.10"
 }
