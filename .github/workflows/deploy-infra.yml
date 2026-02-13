@@ -9,7 +9,7 @@ on:
 
 jobs:
   terraform-plan:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -116,7 +116,7 @@ jobs:
 
 
   terraform-destroy:
-    if: github.base_ref == 'destoy-tf' && github.event_name == 'pull_request'
+    if: github.base_ref == 'destoy-tf' && github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
       run:
