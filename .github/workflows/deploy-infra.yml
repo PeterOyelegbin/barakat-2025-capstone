@@ -9,7 +9,7 @@ on:
 
 jobs:
   terraform-plan:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,7 +56,7 @@ jobs:
 
   terraform-apply:
     needs: terraform-plan
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -94,7 +94,7 @@ jobs:
 
   deploy-application:
     needs: terraform-apply
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -116,7 +116,7 @@ jobs:
 
 
   terraform-destroy:
-    if: github.base_ref == 'destoy-tf' && github.event_name == 'push'
+    if: github.base_ref == 'destroy-tf'
     runs-on: ubuntu-latest
     defaults:
       run:
