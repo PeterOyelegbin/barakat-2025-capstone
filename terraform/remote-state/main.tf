@@ -13,11 +13,8 @@ provider "aws" {
   region = var.region
 }
 
-# Get AWS account ID
-data "aws_caller_identity" "current" {}
-
 resource "aws_s3_bucket" "tf_state" {
-  bucket = "${var.project_name}-${data.aws_caller_identity.current.account_id}-tfstate"
+  bucket = "${var.project_name}-tfstate-altsoe0250384"
 
   lifecycle {
     prevent_destroy = false #set to false for testing purposes, change to true in production
