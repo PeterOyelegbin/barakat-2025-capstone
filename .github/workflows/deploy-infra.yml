@@ -86,9 +86,6 @@ jobs:
     name: 'Deploy Application to EKS'
     runs-on: ubuntu-latest
     needs: terraform-apply
-    defaults:
-      run:
-        working-directory: ./scripts
     
     steps:
       - name: Checkout
@@ -101,8 +98,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Make script executable
+        run: chmod +x ./scripts/deploy-app.sh
+
       - name: Deploy Application
-        run: ./deploy-app.sh
+        run: ./scripts/deploy-app.sh
 
 
   terraform-destroy:
