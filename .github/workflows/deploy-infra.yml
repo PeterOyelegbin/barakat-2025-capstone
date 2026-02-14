@@ -5,12 +5,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main, destroy-tf]
-  workflow_dispatch:
 
 jobs:
   terraform-plan:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'pull_request'
+    name: 'Terraform Plan'
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     defaults:
       run:
         working-directory: ./terraform
@@ -19,17 +19,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: ">= 1.10"
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ">= 1.10"
 
       - name: Terraform Init
         run: terraform init
@@ -55,9 +55,10 @@ jobs:
 
 
   terraform-apply:
-    needs: terraform-plan
-    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    name: 'Terraform Apply'
     runs-on: ubuntu-latest
+    needs: terraform-plan
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     defaults:
       run:
         working-directory: ./terraform
@@ -66,15 +67,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
       - name: Download Plan
         uses: actions/download-artifact@v4
@@ -93,9 +94,9 @@ jobs:
 
 
   deploy-application:
-    needs: terraform-apply
-    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    name: 'Deploy Application to EKS'
     runs-on: ubuntu-latest
+    needs: terraform-apply
     defaults:
       run:
         working-directory: ./scripts
@@ -116,8 +117,9 @@ jobs:
 
 
   terraform-destroy:
-    if: github.base_ref == 'destroy-tf'
+    name: 'Terraform Destroy'
     runs-on: ubuntu-latest
+    if: github.base_ref == 'destroy-tf'
     defaults:
       run:
         working-directory: ./terraform
@@ -126,9 +128,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -136,8 +135,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
       - name: Terraform Destroy
         run: |
+          kubectl delete namespace ${{ vars.APP_NAMESPACE }} 2>/dev/null || echo "Namespace ${{ vars.APP_NAMESPACE }} does not exist or has already been deleted"
+
           aws s3 rm s3://${{ vars.BUCKET_NAME }} --recursive 2>/dev/null || echo "S3 bucket is already empty or does not exist"
 
           # Write the variable content to a file

@@ -68,6 +68,11 @@ resource "aws_iam_role_policy_attachment" "eks_node" {
 # Create IAM role for EKS admin access
 data "aws_caller_identity" "current" {}
 
+locals {
+    # Extract username from ARN
+    user_arn_parts = split("/", data.aws_caller_identity.current.arn)
+    username       = element(local.user_arn_parts, length(local.user_arn_parts) - 1)
+}
 
 resource "aws_iam_role" "eks_admin" {
     name = "${var.project_name}-eks-admin-role"
@@ -106,8 +111,7 @@ resource "aws_iam_policy" "allow_assume_eks_admin" {
 }
 
 resource "aws_iam_user_policy_attachment" "attach_assume_policy" {
-    user       = "taiwo"
-    # user       = "automation"
+    user       = local.username
     policy_arn = aws_iam_policy.allow_assume_eks_admin.arn
 }
 

@@ -7,8 +7,8 @@ terraform {
   }
 
   backend "s3" {
-    bucket       = "bedrock-154517339571-tfstate"
-    key          = "prod/terraform.tfstate"
+    bucket       = "bedrock-tfstate-altsoe0250384"
+    key          = "terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true
     use_lockfile = true
