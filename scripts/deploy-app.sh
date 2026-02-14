@@ -17,10 +17,6 @@ AWS_EKS_ADMIN_ARN="arn:aws:iam::$ACCOUNT_ID:role/project-bedrock-eks-admin-role"
 CLUSTER_NAME="project-bedrock-cluster"
 APP_NAMESPACE="retail-app"
 
-echo "Current directory: $(pwd)"
-echo "Script directory: $SCRIPT_DIR"
-echo "Root directory: $ROOT_DIR"
-
 echo "Connecting kubectl to EKS Cluster..."
 aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME --role-arn $AWS_EKS_ADMIN_ARN
 # aws eks --region us-east-1 update-kubeconfig --name project-bedrock-cluster --role-arn arn:aws:iam::226290659927:role/project-bedrock-eks-admin-role
@@ -37,6 +33,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 echo "Deploying retail store sample microservices application using Helm..."
+helm dependency build "$ROOT_DIR/cluster-deps"
 helm install cluster-deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace
 helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:0.8.5 --namespace $APP_NAMESPACE --wait
 helm install catalog oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart:1.4.0 --namespace $APP_NAMESPACE --wait
