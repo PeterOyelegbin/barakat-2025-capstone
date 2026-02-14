@@ -10,7 +10,7 @@ jobs:
   terraform-plan:
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.ref == 'refs/heads/main
     defaults:
       run:
         working-directory: ./terraform
@@ -126,6 +126,9 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
 
       - name: Terraform Destroy
         run: |
