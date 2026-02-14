@@ -1,8 +1,12 @@
 #!/bin/bash
 
-set -euo pipefail 
+set -euo pipefail
 
 # Environment variables
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Go to the root directory (assuming script is in scripts/)
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 if [ -z "$ACCOUNT_ID" ]; then
   echo "Unable to determine AWS Account ID. Are you logged in with AWS CLI?"
@@ -12,6 +16,10 @@ AWS_REGION="us-east-1"
 AWS_EKS_ADMIN_ARN="arn:aws:iam::$ACCOUNT_ID:role/project-bedrock-eks-admin-role"
 CLUSTER_NAME="project-bedrock-cluster"
 APP_NAMESPACE="retail-app"
+
+echo "Current directory: $(pwd)"
+echo "Script directory: $SCRIPT_DIR"
+echo "Root directory: $ROOT_DIR"
 
 echo "Connecting kubectl to EKS Cluster..."
 aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME --role-arn $AWS_EKS_ADMIN_ARN
@@ -29,7 +37,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 echo "Deploying retail store sample microservices application using Helm..."
-helm install cluster-deps ./cluster-deps -n $APP_NAMESPACE --create-namespace
+helm install cluster-deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace
 helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:0.8.5 --namespace $APP_NAMESPACE --wait
 helm install catalog oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart:1.4.0 --namespace $APP_NAMESPACE --wait
 helm install cart oci://public.ecr.aws/aws-containers/retail-store-sample-cart-chart:1.4.0 --namespace $APP_NAMESPACE --wait
