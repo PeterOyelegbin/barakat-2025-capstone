@@ -106,8 +106,8 @@ resource "aws_iam_policy" "allow_assume_eks_admin" {
 }
 
 resource "aws_iam_user_policy_attachment" "attach_assume_policy" {
-    user       = "taiwo"
-    # user       = "automation"
+    # user       = "taiwo"
+    user       = "automation"
     policy_arn = aws_iam_policy.allow_assume_eks_admin.arn
 }
 
