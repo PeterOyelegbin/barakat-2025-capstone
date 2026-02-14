@@ -10,7 +10,7 @@ jobs:
   terraform-plan:
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.ref == 'refs/heads/main
+    if: github.event_name == 'pull_request' && github.ref == 'refs/heads/main'
     defaults:
       run:
         working-directory: ./terraform
@@ -108,7 +108,7 @@ jobs:
   terraform-destroy:
     name: 'Terraform Destroy'
     runs-on: ubuntu-latest
-    if: github.base_ref == 'destroy-tf'
+    if: github.base_ref == 'destroy-tf' && github.event_name == 'pull_request'
     defaults:
       run:
         working-directory: ./terraform
