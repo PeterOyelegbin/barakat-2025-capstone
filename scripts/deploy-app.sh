@@ -26,30 +26,55 @@ kubectl get nodes
 
 echo "Creating namespace for retail application..."
 kubectl create namespace $APP_NAMESPACE 2>/dev/null || echo "Namespace $APP_NAMESPACE already exists"
-# kubectl create namespace retail-app
 
 echo "Adding Helm repository for retail store sample app..."
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
-echo "Deploying retail store sample microservices application using Helm..."
-helm dependency build "$ROOT_DIR/cluster-deps"
-helm install cluster-deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace
-helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:0.8.5 --namespace $APP_NAMESPACE --wait
-helm install catalog oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart:1.4.0 --namespace $APP_NAMESPACE --wait
-helm install cart oci://public.ecr.aws/aws-containers/retail-store-sample-cart-chart:1.4.0 --namespace $APP_NAMESPACE --wait
-helm install orders oci://public.ecr.aws/aws-containers/retail-store-sample-orders-chart:1.4.0 --namespace $APP_NAMESPACE --wait
-helm install checkout oci://public.ecr.aws/aws-containers/retail-store-sample-checkout-chart:1.4.0 --namespace $APP_NAMESPACE --wait
+echo "Deploying dependencies for the retail application using Helm..."
+helm dependency build "$ROOT_DIR/cluster-deps" || helm dependency update "$ROOT_DIR/cluster-deps"
+helm upgrade --install cluster-deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace \
+  --set mysql.primary.persistence.enabled=false \
+  --set postgresql.primary.persistence.enabled=false \
+  --set redis.master.persistence.enabled=false \
+  --set redis.replica.persistence.enabled=false \
+  --set rabbitmq.persistence.enabled=false \
+  --timeout=10m || echo "In cluster databases is still starting..."
 
+echo "Deploying retail store sample microservices application using Helm..."
+# Deploy catalog service using MySQL database
+helm install catalog oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart:1.4.0 \
+  --namespace $APP_NAMESPACE --set database.type=mysql --set database.host=cluster-deps-mysql \
+  --set database.name=catalog_db --set database.user=catalog_user --set database.password=CatalogPass123 \
+  --wait
+
+# Deploy cart service using DynamoDB
+helm install carts oci://public.ecr.aws/aws-containers/retail-store-sample-cart-chart:1.4.0 \
+  --namespace $APP_NAMESPACE --set database.type=dynamodb --set database.endpoint=http://dynamodb-local:8000 \
+  --set database.tableName=cart_table --wait
+
+# Deploy orders service using PostgreSQL
+helm install orders oci://public.ecr.aws/aws-containers/retail-store-sample-orders-chart:1.4.0 \
+  --namespace $APP_NAMESPACE --set database.type=postgresql --set database.host=cluster-deps-postgresql \
+  --set database.name=orders_db --set database.user=orders_user --set database.password=OrdersPass123 \
+  --set rabbitmq.enabled=true --set rabbitmq.host=cluster-deps-rabbitmq --wait
+
+# Deploy checkout service using Redis for session management
+helm install checkout oci://public.ecr.aws/aws-containers/retail-store-sample-checkout-chart:1.4.0 \
+  --namespace $APP_NAMESPACE --set redis.enabled=true --set redis.host=cluster-deps-redis \
+  --set orders.host=orders --wait
+
+# Deploy UI service (frontend application) and connect it to the backend services
+helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:1.4.0 \
+  --namespace $APP_NAMESPACE --set catalog.host=catalog --set cart.host=carts \
+  --set orders.host=orders --set checkout.host=checkout --set service.type=LoadBalancer \
+  --set service.port=80 --set service.targetPort=80 --wait
 
 echo "Waiting for application pods to be ready..."
-kubectl wait --namespace $APP_NAMESPACE --for=condition=ready pod --all --timeout=300s 2>/dev/null || echo "All pods ready, check completed"
+kubectl wait --namespace $APP_NAMESPACE --for=condition=ready pod --all --timeout=300s 2>/dev/null || echo "Some pods may still be starting up"
 
 echo "Listing pods in the retail application namespace..."
 kubectl get pods -n $APP_NAMESPACE
-
-echo "Exposing the services if not already exposed..."
-kubectl patch svc ui -n $APP_NAMESPACE -p '{"spec":{"type":"LoadBalancer"}}'
 
 echo "Listing services in the retail application namespace..."
 kubectl get svc -n $APP_NAMESPACE

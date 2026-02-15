@@ -11,5 +11,8 @@ dependencies:
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 14.4.3
-digest: sha256:fa01803d57a4ffa4dcf0cc0aed5426cef74d56c4990bf4181db47bbc905c94c7
-generated: "2026-02-13T18:55:42.998271437+01:00"
+- name: dynamodb-local
+  repository: file://./charts/dynamodb-local
+  version: 0.1.0
+digest: sha256:1195c0dc271b3eda3e70f83d6c05e4c173e2f76c6f75136082932072451228a7
+generated: "2026-02-15T12:54:45.42086719+01:00"
