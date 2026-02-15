@@ -85,7 +85,7 @@ jobs:
   deploy-application:
     name: 'Deploy Application to EKS'
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'deploy-app'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/deploy-app'
     
     steps:
       - name: Checkout
@@ -111,7 +111,7 @@ jobs:
   terraform-destroy:
     name: 'Terraform Destroy'
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'destroy-tf'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/destroy-tf'
 
     steps:
       - name: Checkout
