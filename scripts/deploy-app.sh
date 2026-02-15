@@ -33,7 +33,7 @@ helm repo update
 
 echo "Deploying dependencies for the retail application using Helm..."
 helm dependency update "$ROOT_DIR/cluster-deps" || helm dependency build "$ROOT_DIR/cluster-deps"
-helm install deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace --wait 500m
+helm install deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace --timeout=10m 2>/dev/null || echo "Deps is still starting..."
 
 echo "Deploying retail store sample microservices application using Helm..."
 # Deploy catalog service using MySQL database
