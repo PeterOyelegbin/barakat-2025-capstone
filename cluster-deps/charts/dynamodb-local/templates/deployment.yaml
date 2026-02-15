@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dynamodb-local
+  labels:
+    app: dynamodb-local
 spec:
   replicas: 1
   selector:
@@ -15,5 +17,9 @@ spec:
       containers:
         - name: dynamodb-local
           image: amazon/dynamodb-local:latest
+          args: ["-jar", "DynamoDBLocal.jar", "-inMemory", "-sharedDb"]
           ports:
             - containerPort: 8000
+              name: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

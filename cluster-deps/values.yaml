@@ -1,21 +1,37 @@
 mysql:
   auth:
     rootPassword: RootPass123
-    database: myapp
+    database: catalog_db
+    username: catalog_user
+    password: CatalogPass123
   primary:
     persistence:
       enabled: true
-      size: 10Gi
+      size: 5Gi
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
 
 postgresql:
   auth:
-    username: appuser
-    password: AppPass123
-    database: myapp
+    database: orders_db
+    username: orders_user
+    password: OrdersPass123
   primary:
     persistence:
       enabled: true
-      size: 10Gi
+      size: 5Gi
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
 
 redis:
   auth:
@@ -23,7 +39,14 @@ redis:
   master:
     persistence:
       enabled: true
-      size: 5Gi
+      size: 2Gi
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
 
 rabbitmq:
   auth:
@@ -31,4 +54,20 @@ rabbitmq:
     password: AdminPass123
   persistence:
     enabled: true
-    size: 8Gi
+    size: 4Gi
+  resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+dynamodb-local:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
