@@ -34,6 +34,11 @@ helm repo update
 echo "Deploying dependencies for the retail application using Helm..."
 helm dependency build "$ROOT_DIR/cluster-deps" || helm dependency update "$ROOT_DIR/cluster-deps"
 helm upgrade --install cluster-deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace \
+  --set mysql.primary.persistence.enabled=false \
+  --set postgresql.primary.persistence.enabled=false \
+  --set redis.master.persistence.enabled=false \
+  --set redis.replica.persistence.enabled=false \
+  --set rabbitmq.persistence.enabled=false \
   --timeout=10m || echo "In cluster databases is still starting..."
 
 echo "Deploying retail store sample microservices application using Helm..."
