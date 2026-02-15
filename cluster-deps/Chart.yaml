@@ -1,5 +1,5 @@
 apiVersion: v2
-name: cluster-deps
+name: deps
 description: Umbrella chart for Kubernetes in-cluster dependencies
 type: application
 version: 0.1.0
@@ -21,3 +21,7 @@ dependencies:
   - name: rabbitmq
     version: 14.4.3
     repository: https://charts.bitnami.com/bitnami
+
+  - name: dynamodb-local
+    version: 0.1.0
+    repository: file://./charts/dynamodb-local

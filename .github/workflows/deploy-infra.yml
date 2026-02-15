@@ -10,7 +10,7 @@ jobs:
   terraform-plan:
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.ref == 'refs/heads/main'
     defaults:
       run:
         working-directory: ./terraform
@@ -108,10 +108,7 @@ jobs:
   terraform-destroy:
     name: 'Terraform Destroy'
     runs-on: ubuntu-latest
-    if: github.base_ref == 'destroy-tf'
-    defaults:
-      run:
-        working-directory: ./terraform
+    if: github.base_ref == 'destroy-tf' && github.event_name == 'pull_request'
 
     steps:
       - name: Checkout
@@ -124,13 +121,21 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Make script executable
+        run: chmod +x ./scripts/destroy-app.sh
+
+      - name: Clean up Application
+        run: ./scripts/destroy-app.sh
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: Terraform Destroy
-        run: |
-          kubectl delete namespace ${{ vars.APP_NAMESPACE }} 2>/dev/null || echo "Namespace ${{ vars.APP_NAMESPACE }} does not exist or has already been deleted"
+      - name: Terraform Init
+        run: terraform init
 
+      - name: Terraform Destroy
+        working-directory: ./terraform
+        run: |
           aws s3 rm s3://${{ vars.BUCKET_NAME }} --recursive 2>/dev/null || echo "S3 bucket is already empty or does not exist"
 
           # Write the variable content to a file
