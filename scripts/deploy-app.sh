@@ -33,7 +33,7 @@ helm repo update
 
 echo "Deploying dependencies for the retail application using Helm..."
 helm dependency update "$ROOT_DIR/cluster-deps" || helm dependency build "$ROOT_DIR/cluster-deps"
-helm install deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace --wait
+helm install deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace --wait 500m
 
 echo "Deploying retail store sample microservices application using Helm..."
 # Deploy catalog service using MySQL database
@@ -58,7 +58,7 @@ helm install checkout oci://public.ecr.aws/aws-containers/retail-store-sample-ch
   --namespace $APP_NAMESPACE --set redis.enabled=true --set redis.host=deps-redis --wait
 
 # Deploy UI service (frontend application) and connect it to the backend services
-helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:0.8.5 \
+helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:1.4.0 \
   --namespace $APP_NAMESPACE --set catalog.host=catalog --set cart.host=cart \
   --set orders.host=orders --set checkout.host=checkout --wait
 
