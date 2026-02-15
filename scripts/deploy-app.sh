@@ -32,13 +32,14 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 echo "Deploying dependencies for the retail application using Helm..."
-helm dependency update "$ROOT_DIR/cluster-deps" || helm dependency build "$ROOT_DIR/cluster-deps"
-helm install "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace --timeout=10m 2>/dev/null || echo "In cluster databases is still starting..."
+helm dependency build "$ROOT_DIR/cluster-deps" || helm dependency update "$ROOT_DIR/cluster-deps"
+helm upgrade --install cluster-deps "$ROOT_DIR/cluster-deps" -n $APP_NAMESPACE --create-namespace \
+  --timeout=10m || echo "In cluster databases is still starting..."
 
 echo "Deploying retail store sample microservices application using Helm..."
 # Deploy catalog service using MySQL database
 helm install catalog oci://public.ecr.aws/aws-containers/retail-store-sample-catalog-chart:1.4.0 \
-  --namespace $APP_NAMESPACE --set database.type=mysql --set database.host=mysql \
+  --namespace $APP_NAMESPACE --set database.type=mysql --set database.host=cluster-deps-mysql \
   --set database.name=catalog_db --set database.user=catalog_user --set database.password=CatalogPass123 \
   --wait
 
@@ -49,13 +50,14 @@ helm install carts oci://public.ecr.aws/aws-containers/retail-store-sample-cart-
 
 # Deploy orders service using PostgreSQL
 helm install orders oci://public.ecr.aws/aws-containers/retail-store-sample-orders-chart:1.4.0 \
-  --namespace $APP_NAMESPACE --set database.type=postgresql --set database.host=postgresql \
+  --namespace $APP_NAMESPACE --set database.type=postgresql --set database.host=cluster-deps-postgresql \
   --set database.name=orders_db --set database.user=orders_user --set database.password=OrdersPass123 \
-  --wait
+  --set rabbitmq.enabled=true --set rabbitmq.host=cluster-deps-rabbitmq --wait
 
 # Deploy checkout service using Redis for session management
 helm install checkout oci://public.ecr.aws/aws-containers/retail-store-sample-checkout-chart:1.4.0 \
-  --namespace $APP_NAMESPACE --set redis.enabled=true --set redis.host=redis --wait
+  --namespace $APP_NAMESPACE --set redis.enabled=true --set redis.host=cluster-deps-redis \
+  --set orders.host=orders --wait
 
 # Deploy UI service (frontend application) and connect it to the backend services
 helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:1.4.0 \

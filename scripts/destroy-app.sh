@@ -24,7 +24,7 @@ echo "Uninstalling retail store sample microservices application using Helm..."
 helm uninstall ui -n $APP_NAMESPACE 2>/dev/null || echo "UI release is already uninstalled or does not exist"
 helm uninstall checkout -n $APP_NAMESPACE 2>/dev/null || echo "Checkout release is already uninstalled or does not exist"
 helm uninstall orders -n $APP_NAMESPACE 2>/dev/null || echo "Orders release is already uninstalled or does not exist"
-helm uninstall cart -n $APP_NAMESPACE 2>/dev/null || echo "Cart release is already uninstalled or does not exist"
+helm uninstall carts -n $APP_NAMESPACE 2>/dev/null || echo "Cart release is already uninstalled or does not exist"
 helm uninstall catalog -n $APP_NAMESPACE 2>/dev/null || echo "Catalog release is already uninstalled or does not exist"
 
 echo "Deleting retail application namespace..."
