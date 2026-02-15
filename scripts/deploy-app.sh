@@ -60,7 +60,8 @@ helm install checkout oci://public.ecr.aws/aws-containers/retail-store-sample-ch
 # Deploy UI service (frontend application) and connect it to the backend services
 helm install ui oci://public.ecr.aws/aws-containers/retail-store-sample-ui-chart:1.4.0 \
   --namespace $APP_NAMESPACE --set catalog.host=catalog --set cart.host=cart \
-  --set orders.host=orders --set checkout.host=checkout --wait
+  --set orders.host=orders --set checkout.host=checkout --set service.type=LoadBalancer \
+  --set service.port=80 --set service.targetPort=80 --wait
 
 echo "Waiting for application pods to be ready..."
 kubectl wait --namespace $APP_NAMESPACE --for=condition=ready pod --all --timeout=300s 2>/dev/null || echo "Some pods may still be starting up"
