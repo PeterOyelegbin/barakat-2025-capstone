@@ -2,7 +2,7 @@ name: Infrastructure Management
 
 on:
   push:
-    branches: [main, destroy-tf]
+    branches: [main]
   pull_request:
     branches: [main, destroy-tf]
 
@@ -111,7 +111,7 @@ jobs:
   terraform-destroy:
     name: 'Terraform Destroy'
     runs-on: ubuntu-latest
-    if: github.base_ref == 'destroy-tf' && github.event_name == 'push'
+    if: github.base_ref == 'destroy-tf' && github.event_name == 'pull_request'
 
     steps:
       - name: Checkout
