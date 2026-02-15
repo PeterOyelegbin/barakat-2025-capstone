@@ -10,7 +10,7 @@ jobs:
   terraform-plan:
     name: 'Terraform Plan'
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.branches[0] == 'main'
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
     defaults:
       run:
         working-directory: ./terraform
@@ -99,7 +99,10 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Make script executable
-        run: chmod +x ./scripts/deploy-app.sh
+        run: chmod +x ./scripts/destroy-app.sh && chmod +x ./scripts/deploy-app.sh
+
+      - name: Clean up Application
+        run: ./scripts/destroy-app.sh
 
       - name: Deploy Application
         run: ./scripts/deploy-app.sh
